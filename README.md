@@ -11,11 +11,11 @@ Start and supervise an explicitly reviewed set of Linux owner processes.
 
 The caller owns the allowed environment and owner list. Restart creates a new incarnation and does not retry a domain request.
 
-Package distribution is not activated by this documentation. Use the checked-in source and the declared dependency versions; published availability must be verified separately.
+The reusable Rust packages are distributed independently through crates.io. Development uses a versioned workspace path for the shared contracts; the published package resolves the same version from the public registry.
 
 ## Getting started
 
-Install Rust 1.97.0 or newer and make the declared dependencies available. Use the configured private registry when a dependency is not distributed publicly. Run from this repository:
+Install Rust 1.97.0 or newer and make the declared dependencies available. No private registry or sibling repository checkout is required. Run from this repository:
 
 ```sh
 cargo test --locked

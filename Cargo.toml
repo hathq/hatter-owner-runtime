@@ -1,22 +1,27 @@
 # Hatter downstream, 2026: process policy and exact volatile owner observations.
 [package]
+readme = "README.md"
+repository = "https://github.com/hathq/hatter-owner-runtime"
 name = "hatter-owner-runtime"
 version = "0.10.0"
 edition = "2024"
 rust-version = "1.97.0"
 license = "Apache-2.0"
 description = "Hatter exact process incarnation, handshake and availability policy"
-publish = ["ecosystem-private"]
-include = ["src/**", "tests/**", "examples/**", "Cargo.toml", "README.md"]
+publish = ["crates-io"]
+include = ["src/**", "tests/**", "examples/**", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
 
 [workspace]
+members = [".", "crates/hatter-owner-contracts"]
+resolver = "3"
+default-members = ["."]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-hatter-owner-contracts = { version = "=0.10.0", registry = "ecosystem-private" }
-crowsi-process-adapter = { version = "=0.10.0", registry = "ecosystem-private" }
-crowsi-transport-foundation = { version = "=0.10.0", registry = "ecosystem-private", features = ["async-io"] }
+hatter-owner-contracts = { path = "crates/hatter-owner-contracts", version = "=0.10.0" }
+crowsi-process-adapter = { version = "=0.10.0" }
+crowsi-transport-foundation = { version = "=0.10.0", features = ["async-io"] }
 tokio = { version = "1.49", features = ["macros", "rt", "time", "io-util", "io-std", "sync"] }
 sha2 = "0.10"
 

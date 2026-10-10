@@ -1,0 +1,60 @@
+name: Verify independent owner packages
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Public library to package
+        type: choice
+        options: [hatter-owner-contracts, hatter-owner-runtime]
+        default: hatter-owner-contracts
+      expected-source-sha:
+        description: Exact main commit
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  cargo-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: '2'
+      SELECTED_PACKAGE: ${{ inputs.package || 'hatter-owner-contracts' }}
+      EXPECTED_SOURCE: ${{ inputs.expected-source-sha }}
+    steps:
+      - name: Check the selected unit and isolate public dependency configuration
+        run: |
+          case "$SELECTED_PACKAGE" in hatter-owner-contracts|hatter-owner-runtime) ;; *) exit 1 ;; esac
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            [[ "$GITHUB_REF" == refs/heads/main && "$EXPECTED_SOURCE" =~ ^[a-f0-9]{40}$ && "$EXPECTED_SOURCE" == "$GITHUB_SHA" ]]
+          fi
+          echo "CARGO_HOME=$RUNNER_TEMP/public-cargo-home" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/public-cargo-target" >> "$GITHUB_ENV"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Install the declared Rust toolchain
+        run: rustup toolchain install 1.97 --profile minimal --component rustfmt --component clippy
+      - name: Validate both workspace libraries
+        run: |
+          cargo +1.97 fmt --all -- --check
+          cargo +1.97 clippy --locked --workspace --all-targets --all-features -- -D warnings
+          cargo +1.97 test --locked --workspace --all-features
+      - name: Generate and build the selected registry package
+        run: cargo +1.97 package --locked --registry crates-io -p "$SELECTED_PACKAGE"
+      - name: Record exact source and distribution bytes
+        run: |
+          mkdir outgoing
+          cp "$CARGO_TARGET_DIR/package/$SELECTED_PACKAGE-0.10.0.crate" outgoing/
+          printf '%s\n' "$GITHUB_SHA" > outgoing/source-sha.txt
+          cd outgoing
+          sha256sum "$SELECTED_PACKAGE-0.10.0.crate" > SHA256SUMS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: reviewed-cargo-package
+          path: outgoing/
+          if-no-files-found: error
+          retention-days: 3
