@@ -1,0 +1,144 @@
+{
+  "repository": "hathq/hatter-owner-runtime",
+  "purpose": "Start and supervise an explicitly reviewed set of Linux owner processes.",
+  "responsibility_boundary": "Own only the documented product/interface scope. Reuse applicable managed common components without forcing unrelated dependencies. Separate synthetic source acceptance from actual account, data and deployment acceptance.",
+  "packages": [
+    {
+      "manifest": "Cargo.toml",
+      "package": "hatter-owner-runtime",
+      "ecosystem": "rust",
+      "description": "Hatter exact process incarnation, handshake and availability policy",
+      "interfaces": {
+        "lib": "src/lib.rs",
+        "features": {},
+        "bins": [],
+        "public_modules": [
+          "supervision",
+          "supervisor"
+        ],
+        "public_reexports": [],
+        "implicit_bins": [
+          "src/bin/hatter-supervisor.rs"
+        ]
+      },
+      "declared_commands": {}
+    },
+    {
+      "manifest": "crates/hatter-owner-contracts/Cargo.toml",
+      "package": "hatter-owner-contracts",
+      "ecosystem": "rust",
+      "description": "Exact Hatter owner incarnation and volatile availability contracts",
+      "interfaces": {
+        "lib": "crates/hatter-owner-contracts/src/lib.rs",
+        "features": {},
+        "bins": [],
+        "public_modules": [],
+        "public_reexports": [],
+        "implicit_bins": []
+      },
+      "declared_commands": {}
+    }
+  ],
+  "schema_definitions": [],
+  "test_sources": [
+    "crates/hatter-owner-contracts/src/lib.rs",
+    "src/supervisor.rs",
+    "tests/independent_supervisor.rs"
+  ],
+  "example_sources": [
+    "examples/owner_probe.rs"
+  ],
+  "workflow_definitions": [
+    {
+      "path": ".github/workflows/cargo-package.yml",
+      "jobs": [
+        {
+          "job": "cargo-package",
+          "condition": null,
+          "runs_on": "ubuntu-24.04",
+          "steps": [
+            {
+              "name": "Check the selected unit and isolate public dependency configuration",
+              "run": "case \"$SELECTED_PACKAGE\" in hatter-owner-contracts|hatter-owner-runtime) ;; *) exit 1 ;; esac\nif [[ \"$GITHUB_EVENT_NAME\" == workflow_dispatch ]]; then\n  [[ \"$GITHUB_REF\" == refs/heads/main && \"$EXPECTED_SOURCE\" =~ ^[a-f0-9]{40}$ && \"$EXPECTED_SOURCE\" == \"$GITHUB_SHA\" ]]\nfi\necho \"CARGO_HOME=$RUNNER_TEMP/public-cargo-home\" >> \"$GITHUB_ENV\"\necho \"CARGO_TARGET_DIR=$RUNNER_TEMP/public-cargo-target\" >> \"$GITHUB_ENV\"\n",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Install the declared Rust toolchain",
+              "run": "rustup toolchain install 1.97 --profile minimal --component rustfmt --component clippy",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Validate both workspace libraries",
+              "run": "cargo +1.97 fmt --all -- --check\ncargo +1.97 clippy --locked --workspace --all-targets --all-features -- -D warnings\ncargo +1.97 test --locked --workspace --all-features\n",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Generate and build the selected registry package",
+              "run": "cargo +1.97 package --locked --registry crates-io -p \"$SELECTED_PACKAGE\"",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Record exact source and distribution bytes",
+              "run": "mkdir outgoing\ncp \"$CARGO_TARGET_DIR/package/$SELECTED_PACKAGE-0.10.0.crate\" outgoing/\nprintf '%s\\n' \"$GITHUB_SHA\" > outgoing/source-sha.txt\ncd outgoing\nsha256sum \"$SELECTED_PACKAGE-0.10.0.crate\" > SHA256SUMS\n",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+              "condition": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/oss-policy.yml",
+      "jobs": [
+        {
+          "job": "repository-policy",
+          "condition": null,
+          "runs_on": "ubuntu-latest",
+          "steps": [
+            {
+              "name": null,
+              "run": null,
+              "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+              "condition": null
+            },
+            {
+              "name": "Verify repository policy",
+              "run": "python3 .github/oss-policy-check.py",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Verify policy regression tests",
+              "run": "cd .github && python3 -m unittest discover -s policy-tests",
+              "uses": null,
+              "condition": null
+            },
+            {
+              "name": "Check policy types",
+              "run": "python3 -m venv \"$RUNNER_TEMP/policy-types\"\n\"$RUNNER_TEMP/policy-types/bin/pip\" install -r .github/policy/requirements.txt\n\"$RUNNER_TEMP/policy-types/bin/mypy\" --strict .github/policy .github/oss-policy-check.py .github/policy-tests\n",
+              "uses": null,
+              "condition": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "evidence_policy": "Declarations and source paths are not proof of an executed acceptance. Exact CI head and result are recorded separately. No live accounts or production acceptance is inferred."
+}
