@@ -45,13 +45,18 @@ jobs:
           cargo +1.97 test --locked --workspace --all-features
       - name: Generate and build the selected registry package
         run: cargo +1.97 package --locked --registry crates-io -p "$SELECTED_PACKAGE"
+      - name: Resolve current package archive names
+        run: python3 .github/scripts/archive_names.py
       - name: Record exact source and distribution bytes
         run: |
+          archive_key="PACKAGE_ARCHIVE_${SELECTED_PACKAGE^^}_CARGO"
+          archive_key="${archive_key//-/_}"
+          archive_name="${!archive_key}"
           mkdir outgoing
-          cp "$CARGO_TARGET_DIR/package/$SELECTED_PACKAGE-0.10.0.crate" outgoing/
+          cp "$CARGO_TARGET_DIR/package/$archive_name" outgoing/
           printf '%s\n' "$GITHUB_SHA" > outgoing/source-sha.txt
           cd outgoing
-          sha256sum "$SELECTED_PACKAGE-0.10.0.crate" > SHA256SUMS
+          sha256sum "$archive_name" > SHA256SUMS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: reviewed-cargo-package
