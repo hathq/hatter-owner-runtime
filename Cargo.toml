@@ -23,7 +23,7 @@ hatter-owner-contracts = { path = "crates/hatter-owner-contracts", version = "=0
 crowsi-process-adapter = { version = "=0.10.0" }
 crowsi-transport-foundation = { version = "=0.10.0", features = ["async-io"] }
 tokio = { version = "1.49", features = ["macros", "rt", "time", "io-util", "io-std", "sync"] }
-sha2 = "0.10"
+sha2 = "0.11"
 
 [lints.rust]
 unsafe_code = "forbid"
