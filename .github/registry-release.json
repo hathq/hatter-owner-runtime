@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "repository": "hathq/hatter-owner-runtime",
+  "defaultBranch": "main",
+  "requiredWorkflows": [
+    "cargo-package.yml",
+    "oss-policy.yml"
+  ],
+  "packages": [
+    {
+      "ecosystem": "cargo",
+      "manifest": "Cargo.toml",
+      "name": "hatter-owner-runtime",
+      "installDirectory": "."
+    },
+    {
+      "ecosystem": "cargo",
+      "manifest": "crates/hatter-owner-contracts/Cargo.toml",
+      "name": "hatter-owner-contracts",
+      "installDirectory": "."
+    }
+  ]
+}
