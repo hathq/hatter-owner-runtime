@@ -1,5 +1,7 @@
 # Hatter downstream, 2026: process policy and exact volatile owner observations.
 [package]
+categories = ["os"]
+keywords = ["linux", "process-supervision", "resource-limits", "rust"]
 readme = "README.md"
 repository = "https://github.com/hathq/hatter-owner-runtime"
 name = "hatter-owner-runtime"

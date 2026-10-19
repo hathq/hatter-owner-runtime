@@ -1,5 +1,7 @@
 # Hatter downstream, 2026: exact owner identities and observations, no process mechanism.
 [package]
+categories = ["os"]
+keywords = ["process-management", "contracts", "linux", "rust"]
 readme = "README.md"
 repository = "https://github.com/hathq/hatter-owner-runtime"
 name = "hatter-owner-contracts"
