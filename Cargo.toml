@@ -22,7 +22,7 @@ default-members = ["."]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 hatter-owner-contracts = { path = "crates/hatter-owner-contracts", version = "=0.10.0" }
-crowsi-process-adapter = { version = "=0.10.0" }
+crowsi-process-adapter = { version = "=0.11.0" }
 crowsi-transport-foundation = { version = "=0.10.0", features = ["async-io"] }
 tokio = { version = "1.49", features = ["macros", "rt", "time", "io-util", "io-std", "sync"] }
 sha2 = "0.11"
